@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bondig - Color Theme Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0D9488',
+                        'primary-dark': '#0F766E',
+                        surface: '#FFFFFF',
+                        background: '#FAFAF9',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-8 py-4">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <h1 class="text-2xl font-semibold text-slate-800">
+                <span class="text-teal-600">Bondig</span> Color Theme Preview
+            </h1>
+            <span class="text-sm text-slate-500">Visual Foundation Proposal</span>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-8 py-8 space-y-12">
+
+        <!-- Color Palette Section -->
+        <section>
+            <h2 class="text-xl font-semibold text-slate-800 mb-6">Base Palette</h2>
+            <div class="grid grid-cols-6 gap-4">
+                <!-- Primary -->
+                <div class="space-y-2">
+                    <div class="h-24 rounded-lg bg-teal-600 flex items-end p-3">
+                        <span class="text-white text-sm font-medium">Primary</span>
+                    </div>
+                    <div class="text-xs text-slate-600">
+                        <div class="font-medium">Teal 600</div>
+                        <div>#0D9488</div>
+                    </div>
+                </div>
+                <!-- Secondary -->
+                <div class="space-y-2">
+                    <div class="h-24 rounded-lg bg-slate-600 flex items-end p-3">
+                        <span class="text-white text-sm font-medium">Secondary</span>
+                    </div>
+                    <div class="text-xs text-slate-600">
+                        <div class="font-medium">Slate 600</div>
+                        <div>#475569</div>
+                    </div>
+                </div>
+                <!-- Background -->
+                <div class="space-y-2">
+                    <div class="h-24 rounded-lg bg-stone-50 border border-slate-200 flex items-end p-3">
+                        <span class="text-slate-700 text-sm font-medium">Background</span>
+                    </div>
+                    <div class="text-xs text-slate-600">
+                        <div class="font-medium">Stone 50</div>
+                        <div>#FAFAF9</div>
+                    </div>
+                </div>
+                <!-- Surface -->
+                <div class="space-y-2">
+                    <div class="h-24 rounded-lg bg-white border border-slate-200 flex items-end p-3">
+                        <span class="text-slate-700 text-sm font-medium">Surface</span>
+                    </div>
+                    <div class="text-xs text-slate-600">
+                        <div class="font-medium">White</div>
+                        <div>#FFFFFF</div>
+                    </div>
+                </div>
+                <!-- Text -->
+                <div class="space-y-2">
+                    <div class="h-24 rounded-lg bg-slate-800 flex items-end p-3">
+                        <span class="text-white text-sm font-medium">Text</span>
+                    </div>
+                    <div class="text-xs text-slate-600">
+                        <div class="font-medium">Slate 800</div>
+                        <div>#1E293B</div>
+                    </div>
+                </div>
+                <!-- Muted -->
+                <div class="space-y-2">
+                    <div class="h-24 rounded-lg bg-slate-500 flex items-end p-3">
+                        <span class="text-white text-sm font-medium">Muted</span>
+                    </div>
+                    <div class="text-xs text-slate-600">
+                        <div class="font-medium">Slate 500</div>
+                        <div>#64748B</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Semantic Colors -->
+        <section>
+            <h2 class="text-xl font-semibold text-slate-800 mb-6">Semantic Colors</h2>
+            <div class="grid grid-cols-4 gap-4">
+                <div class="space-y-2">
+                    <div class="h-20 rounded-lg bg-emerald-500 flex items-end p-3">
+                        <span class="text-white text-sm font-medium">Success</span>
+                    </div>
+                    <div class="text-xs text-slate-600">Emerald #10B981</div>
+                </div>
+                <div class="space-y-2">
+                    <div class="h-20 rounded-lg bg-amber-500 flex items-end p-3">
+                        <span class="text-white text-sm font-medium">Warning</span>
+                    </div>
+                    <div class="text-xs text-slate-600">Amber #F59E0B</div>
+                </div>
+                <div class="space-y-2">
+                    <div class="h-20 rounded-lg bg-rose-500 flex items-end p-3">
+                        <span class="text-white text-sm font-medium">Error</span>
+                    </div>
+                    <div class="text-xs text-slate-600">Rose #F43F5E</div>
+                </div>
+                <div class="space-y-2">
+                    <div class="h-20 rounded-lg bg-sky-500 flex items-end p-3">
+                        <span class="text-white text-sm font-medium">Info</span>
+                    </div>
+                    <div class="text-xs text-slate-600">Sky #0EA5E9</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category Colors -->
+        <section>
+            <h2 class="text-xl font-semibold text-slate-800 mb-6">Category Colors</h2>
+            <div class="flex flex-wrap gap-3">
+                <span class="px-4 py-2 rounded-full bg-green-500 text-white text-sm font-medium">Produce</span>
+                <span class="px-4 py-2 rounded-full bg-blue-500 text-white text-sm font-medium">Dairy</span>
+                <span class="px-4 py-2 rounded-full bg-red-500 text-white text-sm font-medium">Meat/Fish</span>
+                <span class="px-4 py-2 rounded-full bg-amber-500 text-white text-sm font-medium">Bakery</span>
+                <span class="px-4 py-2 rounded-full bg-cyan-500 text-white text-sm font-medium">Beverages</span>
+                <span class="px-4 py-2 rounded-full bg-purple-500 text-white text-sm font-medium">Snacks</span>
+                <span class="px-4 py-2 rounded-full bg-slate-500 text-white text-sm font-medium">Household</span>
+                <span class="px-4 py-2 rounded-full bg-stone-500 text-white text-sm font-medium">Other</span>
+            </div>
+        </section>
+
+        <!-- UI Components Preview -->
+        <section>
+            <h2 class="text-xl font-semibold text-slate-800 mb-6">UI Components</h2>
+            <div class="grid grid-cols-2 gap-8">
+
+                <!-- Buttons -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-medium text-slate-600 uppercase tracking-wide">Buttons</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition">Primary</button>
+                        <button class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-medium transition">Secondary</button>
+                        <button class="px-4 py-2 border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition">Outline</button>
+                        <button class="px-4 py-2 text-teal-600 hover:bg-teal-50 rounded-lg font-medium transition">Ghost</button>
+                    </div>
+                </div>
+
+                <!-- Alerts -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-medium text-slate-600 uppercase tracking-wide">Alerts</h3>
+                    <div class="space-y-2">
+                        <div class="px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm">
+                            34 items parsed successfully
+                        </div>
+                        <div class="px-4 py-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-sm">
+                            3 items need category review
+                        </div>
+                        <div class="px-4 py-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg text-sm">
+                            Could not parse receipt format
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Preview -->
+        <section>
+            <h2 class="text-xl font-semibold text-slate-800 mb-6">Dashboard Preview</h2>
+
+            <!-- Stats Bar -->
+            <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <div class="text-sm text-slate-500">January 2026</div>
+                        <div class="text-2xl font-semibold text-slate-800">Total Spending</div>
+                    </div>
+                    <select class="px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-700">
+                        <option>This Month</option>
+                        <option>Last Month</option>
+                        <option>Last 3 Months</option>
+                    </select>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-4xl font-bold text-slate-800">€427.83</span>
+                    <span class="text-sm text-emerald-600 font-medium">-8% vs last month</span>
+                </div>
+                <!-- Budget Progress -->
+                <div class="mt-4">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-slate-600">Budget: €450</span>
+                        <span class="text-emerald-600 font-medium">€22.17 remaining</span>
+                    </div>
+                    <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-teal-500 rounded-full" style="width: 95%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Cards Grid -->
+            <div class="grid grid-cols-4 gap-4">
+                <!-- Category Card 1 -->
+                <div class="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition cursor-pointer">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Produce</span>
+                        <span class="text-xs text-slate-400">24 items</span>
+                    </div>
+                    <div class="text-2xl font-bold text-slate-800 mb-1">€78.45</div>
+                    <div class="text-sm text-slate-500">18% of total</div>
+                    <div class="mt-3 flex items-center text-xs">
+                        <span class="text-rose-500">+12%</span>
+                        <span class="text-slate-400 ml-1">vs last month</span>
+                    </div>
+                </div>
+
+                <!-- Category Card 2 -->
+                <div class="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition cursor-pointer">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">Dairy</span>
+                        <span class="text-xs text-slate-400">18 items</span>
+                    </div>
+                    <div class="text-2xl font-bold text-slate-800 mb-1">€62.30</div>
+                    <div class="text-sm text-slate-500">15% of total</div>
+                    <div class="mt-3 flex items-center text-xs">
+                        <span class="text-emerald-500">-5%</span>
+                        <span class="text-slate-400 ml-1">vs last month</span>
+                    </div>
+                </div>
+
+                <!-- Category Card 3 -->
+                <div class="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition cursor-pointer">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">Meat/Fish</span>
+                        <span class="text-xs text-slate-400">8 items</span>
+                    </div>
+                    <div class="text-2xl font-bold text-slate-800 mb-1">€89.20</div>
+                    <div class="text-sm text-slate-500">21% of total</div>
+                    <div class="mt-3 flex items-center text-xs">
+                        <span class="text-slate-400">0%</span>
+                        <span class="text-slate-400 ml-1">vs last month</span>
+                    </div>
+                </div>
+
+                <!-- Category Card 4 -->
+                <div class="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition cursor-pointer">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">Snacks</span>
+                        <span class="text-xs text-slate-400">12 items</span>
+                    </div>
+                    <div class="text-2xl font-bold text-slate-800 mb-1">€34.55</div>
+                    <div class="text-sm text-slate-500">8% of total</div>
+                    <div class="mt-3 flex items-center text-xs">
+                        <span class="text-rose-500">+25%</span>
+                        <span class="text-slate-400 ml-1">vs last month</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upload Zone Preview -->
+        <section>
+            <h2 class="text-xl font-semibold text-slate-800 mb-6">Upload Zone</h2>
+            <div class="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center bg-white hover:border-teal-400 hover:bg-teal-50/30 transition cursor-pointer">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-teal-100 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                </div>
+                <div class="text-lg font-medium text-slate-700 mb-1">Drop receipts here</div>
+                <div class="text-sm text-slate-500">or click to browse files</div>
+                <div class="text-xs text-slate-400 mt-2">Supports PDF files from Albert Heijn</div>
+            </div>
+        </section>
+
+        <!-- Receipt Parse Result Preview -->
+        <section>
+            <h2 class="text-xl font-semibold text-slate-800 mb-6">Parse Result Preview</h2>
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <!-- Header -->
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-medium text-slate-800">Receipt parsed successfully</div>
+                            <div class="text-sm text-slate-500">34 items, €127.45 total</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="px-4 py-2 text-teal-600 hover:bg-teal-50 rounded-lg font-medium text-sm transition">Review Categories</button>
+                        <button class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium text-sm transition">View Dashboard</button>
+                    </div>
+                </div>
+                <!-- Items Preview -->
+                <div class="px-6 py-4">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-xs text-slate-500 uppercase tracking-wide">
+                                <th class="pb-3 font-medium">Product</th>
+                                <th class="pb-3 font-medium">Category</th>
+                                <th class="pb-3 font-medium text-right">Qty</th>
+                                <th class="pb-3 font-medium text-right">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="border-t border-slate-100">
+                                <td class="py-3 text-slate-800">AH BANANEN</td>
+                                <td class="py-3"><span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs">Produce</span></td>
+                                <td class="py-3 text-right text-slate-600">1</td>
+                                <td class="py-3 text-right font-medium text-slate-800">€1.39</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="py-3 text-slate-800">BEEMSTER JONG</td>
+                                <td class="py-3"><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs">Dairy</span></td>
+                                <td class="py-3 text-right text-slate-600">1</td>
+                                <td class="py-3 text-right font-medium text-slate-800">€5.49</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="py-3 text-slate-800">PAPRIKA ROOD</td>
+                                <td class="py-3"><span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs">Produce</span></td>
+                                <td class="py-3 text-right text-slate-600">4</td>
+                                <td class="py-3 text-right font-medium text-slate-800">€3.56</td>
+                            </tr>
+                            <tr class="border-t border-slate-100 bg-amber-50">
+                                <td class="py-3 text-slate-800">QUAK CRUESLI</td>
+                                <td class="py-3">
+                                    <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs border border-amber-300">Needs review</span>
+                                </td>
+                                <td class="py-3 text-right text-slate-600">1</td>
+                                <td class="py-3 text-right font-medium text-slate-800">€4.29</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Typography Preview -->
+        <section>
+            <h2 class="text-xl font-semibold text-slate-800 mb-6">Typography Scale</h2>
+            <div class="bg-white rounded-xl border border-slate-200 p-8 space-y-4">
+                <div class="text-3xl font-semibold text-slate-800">H1 - Page Title (30px)</div>
+                <div class="text-2xl font-semibold text-slate-800">H2 - Section Header (24px)</div>
+                <div class="text-xl font-semibold text-slate-800">H3 - Card Title (20px)</div>
+                <div class="text-base font-semibold text-slate-800">H4 - Subsection (16px)</div>
+                <div class="text-base text-slate-700">Body text - Primary content for readability (16px)</div>
+                <div class="text-sm text-slate-500">Small - Secondary information (14px)</div>
+                <div class="text-xs text-slate-400">Tiny - Timestamps and meta (12px)</div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 mt-12 py-6 text-center text-sm text-slate-500">
+        Bondig UX Design - Color Theme Preview
+    </footer>
+
+</body>
+</html>

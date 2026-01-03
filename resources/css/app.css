@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/*
+ * NOTE: Build warnings from daisyUI are expected and safe to ignore:
+ * - "@property --radialprogress": CSS Houdini feature not recognized by esbuild
+ * - "file is not a known CSS property": False positive from Tailwind's file: variant
+ * These come from daisyUI v5 internals and don't affect functionality.
+ */
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: bondig --default;
+}
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    /* Bondig Primary Colors - Teal scale */
+    --color-primary-50: #F0FDFA;
+    --color-primary-100: #CCFBF1;
+    --color-primary-200: #99F6E4;
+    --color-primary-300: #5EEAD4;
+    --color-primary-400: #2DD4BF;
+    --color-primary-500: #14B8A6;
+    --color-primary-600: #0D9488;
+    --color-primary-700: #0F766E;
+    --color-primary-800: #115E59;
+    --color-primary-900: #134E4A;
+}
+
+/* Custom daisyUI theme - Bondig */
+@plugin "daisyui/theme" {
+  name: "bondig";
+  default: true;
+
+  --color-base-100: #FFFFFF;
+  --color-base-200: #FAFAF9;
+  --color-base-300: #F5F5F4;
+  --color-base-content: #1E293B;
+
+  --color-primary: #0D9488;
+  --color-primary-content: #FFFFFF;
+
+  --color-secondary: #475569;
+  --color-secondary-content: #FFFFFF;
+
+  --color-accent: #06B6D4;
+  --color-accent-content: #FFFFFF;
+
+  --color-neutral: #1E293B;
+  --color-neutral-content: #FFFFFF;
+
+  --color-info: #0EA5E9;
+  --color-info-content: #FFFFFF;
+
+  --color-success: #10B981;
+  --color-success-content: #FFFFFF;
+
+  --color-warning: #F59E0B;
+  --color-warning-content: #1E293B;
+
+  --color-error: #F43F5E;
+  --color-error-content: #FFFFFF;
+}
