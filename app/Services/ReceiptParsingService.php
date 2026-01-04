@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\ParsedBonus;
 use App\DTOs\ParsedLine;
 use App\DTOs\ParseResult;
 use Carbon\Carbon;
@@ -30,6 +31,7 @@ class ReceiptParsingService
             $lines = $this->parseLines($rawText);
             $total = $this->extractTotal($rawText);
             $purchasedAt = $this->extractDate($rawText);
+            $bonuses = $this->extractBonusSection($rawText);
 
             if (empty($lines)) {
                 return new ParseResult(
@@ -38,7 +40,8 @@ class ReceiptParsingService
                     total: $total,
                     purchasedAt: $purchasedAt,
                     rawText: $rawText,
-                    errors: ['No product lines found in receipt']
+                    errors: ['No product lines found in receipt'],
+                    bonuses: $bonuses
                 );
             }
 
@@ -48,7 +51,8 @@ class ReceiptParsingService
                 total: $total,
                 purchasedAt: $purchasedAt,
                 rawText: $rawText,
-                errors: []
+                errors: [],
+                bonuses: $bonuses
             );
         } catch (\Exception $e) {
             Log::error('Receipt parsing failed', [
@@ -95,6 +99,10 @@ class ReceiptParsingService
 
     protected function parseLine(string $line, array $allLines, int $index): ?ParsedLine
     {
+        // Remove control characters (form feed, etc.) that may appear in PDF text
+        $line = preg_replace('/[\x00-\x1F\x7F]/', '', $line);
+        $line = trim($line);
+
         // Skip non-product lines early
         if ($this->isNonProductLine($line)) {
             return null;
@@ -103,14 +111,15 @@ class ReceiptParsingService
         // AH Format 1: Qty at start with unit price and total
         // "4        PAPRIKA              0,89     3,56 B"
         // "2        AH EMMENTALE         2,79     5,58 B"
-        if (preg_match('/^(\d+)\s+(.+?)\s+(\d+[,.]\d{2})\s+(\d+[,.]\d{2})\s*([B%].*)?$/u', $line, $matches)) {
-            $isBonus = !empty($matches[5]) && str_contains($matches[5], 'B');
+        if (preg_match('/^(\d+)\s+(.+?)\s+(\d+[,.]\d{2})\s+(\d+[,.]\d{2})\s*(\d*%?|B)?$/u', $line, $matches)) {
+            // Products with B marker or percentage discount (35%) are bonus/discount items
+            $hasDiscount = !empty($matches[5]) && (str_contains($matches[5], 'B') || str_contains($matches[5], '%'));
             return new ParsedLine(
                 name: trim($matches[2]),
                 quantity: (int)$matches[1],
                 unitPrice: $this->parsePrice($matches[3]),
                 totalPrice: $this->parsePrice($matches[4]),
-                isBonus: $isBonus,
+                isBonus: $hasDiscount,
                 rawText: $line
             );
         }
@@ -118,14 +127,15 @@ class ReceiptParsingService
         // AH Format 2: Qty at start with only total price
         // "1        WINTERPEEN                    0,35"
         // "1        BEEMSTER                    10,27 35%"
-        if (preg_match('/^(\d+)\s+(.+?)\s+(\d+[,.]\d{2})\s*(%.*|B)?$/u', $line, $matches)) {
+        if (preg_match('/^(\d+)\s+(.+?)\s+(\d+[,.]\d{2})\s*(\d*%|B)?$/u', $line, $matches)) {
             $name = trim($matches[2]);
             // Skip if name looks like a non-product
             if ($this->isNonProductLine($name)) {
                 return null;
             }
 
-            $isBonus = !empty($matches[4]) && str_contains($matches[4], 'B');
+            // Products with B marker or percentage discount (35%) are bonus/discount items
+            $hasDiscount = !empty($matches[4]) && (str_contains($matches[4], 'B') || str_contains($matches[4], '%'));
             $totalPrice = $this->parsePrice($matches[3]);
             $quantity = (int)$matches[1];
             $unitPrice = $quantity > 0 ? $totalPrice / $quantity : $totalPrice;
@@ -135,7 +145,7 @@ class ReceiptParsingService
                 quantity: $quantity,
                 unitPrice: round($unitPrice, 2),
                 totalPrice: $totalPrice,
-                isBonus: $isBonus,
+                isBonus: $hasDiscount,
                 rawText: $line
             );
         }
@@ -145,12 +155,25 @@ class ReceiptParsingService
 
     protected function isNonProductLine(string $name): bool
     {
-        $nonProductKeywords = [
+        // Keywords that should match as substrings (safe, unlikely to appear in product names)
+        $substringKeywords = [
             'subtotaal',
             'totaal',
             'te betalen',
             'statiegeld',
             '+statiegeld',
+            'bonuskaart',
+            'airmiles',
+            'koopzegels',
+            'spaaracties',
+            'espaarzegelspremium',
+            'uw voordeel',
+            'omschrijving',
+        ];
+
+        // Keywords that must match as whole words (could appear inside product names)
+        // e.g., "pin" in "CAMPINA", "btw" in product codes
+        $wholeWordKeywords = [
             'btw',
             'pin',
             'pinnen',
@@ -159,16 +182,9 @@ class ReceiptParsingService
             'korting',
             'bonus',
             'actie',
-            'bonuskaart',
-            'airmiles',
-            'koopzegels',
-            'spaaracties',
-            'espaarzegelspremium',
             'betaald',
-            'uw voordeel',
             'waarvan',
             'aantal',
-            'omschrijving',
             'prijs',
             'bedrag',
         ];
@@ -180,8 +196,16 @@ class ReceiptParsingService
             return true;
         }
 
-        foreach ($nonProductKeywords as $keyword) {
+        // Check substring keywords
+        foreach ($substringKeywords as $keyword) {
             if (str_contains($lowerName, $keyword)) {
+                return true;
+            }
+        }
+
+        // Check whole word keywords using word boundaries
+        foreach ($wholeWordKeywords as $keyword) {
+            if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/', $lowerName)) {
                 return true;
             }
         }
@@ -264,5 +288,91 @@ class ReceiptParsingService
         // Replace comma with dot for decimal separator
         $price = str_replace(',', '.', $price);
         return (float)$price;
+    }
+
+    /**
+     * Extract bonus section from receipt text.
+     * The bonus section appears after the first "Subtotaal" (with total amount) and before "TOTAAL".
+     *
+     * AH receipt format has:
+     * - "46                     SUBTOTAAL                                            145,99" (first subtotal)
+     * - BONUS lines with discounts
+     * - "UW VOORDEEL" section
+     * - Possibly a second "SUBTOTAAL" inside the voordeel breakdown
+     * - "TOTAAL" with final amount
+     *
+     * @return ParsedBonus[]
+     */
+    protected function extractBonusSection(string $rawText): array
+    {
+        $bonuses = [];
+        $textLines = explode("\n", $rawText);
+        $inBonusSection = false;
+
+        foreach ($textLines as $line) {
+            $trimmedLine = trim($line);
+            if (empty($trimmedLine)) {
+                continue;
+            }
+
+            // Start looking for bonuses after SUBTOTAAL with amount (the main subtotal line)
+            // This handles "46  SUBTOTAAL  145,99" format where there's a count prefix
+            if (!$inBonusSection && preg_match('/SUBTOTAAL\s+\d+[,.]\d{2}/i', $trimmedLine)) {
+                $inBonusSection = true;
+                continue;
+            }
+
+            // Stop at standalone "TOTAAL" line (the final total)
+            if ($inBonusSection && preg_match('/^TOTAAL\s+\d+[,.]\d{2}/i', $trimmedLine)) {
+                break;
+            }
+
+            // Also stop if we hit "UW VOORDEEL" - bonuses are listed before this summary
+            if ($inBonusSection && preg_match('/^UW VOORDEEL/i', $trimmedLine)) {
+                break;
+            }
+
+            if ($inBonusSection) {
+                $bonus = $this->parseBonusLine($trimmedLine);
+                if ($bonus !== null) {
+                    $bonuses[] = $bonus;
+                }
+            }
+        }
+
+        return $bonuses;
+    }
+
+    /**
+     * Parse a single bonus line.
+     * Formats:
+     * - "BONUS                  AHPAPRIKAROO                                           -0,58"
+     * - "35% K                  BEEMSTER                                               -3,59"
+     */
+    protected function parseBonusLine(string $line): ?ParsedBonus
+    {
+        // Pattern 1: BONUS followed by product name and negative amount
+        if (preg_match('/^BONUS\s+(.+?)\s+(-?\d+[,.]\d{2})\s*$/i', $line, $matches)) {
+            $rawName = trim($matches[1]);
+            $amount = $this->parsePrice($matches[2]);
+
+            return new ParsedBonus(
+                rawName: $rawName,
+                discountAmount: abs($amount)
+            );
+        }
+
+        // Pattern 2: Percentage discount (e.g., "35% K  BEEMSTER  -3,59")
+        if (preg_match('/^\d+%\s*\w?\s+(.+?)\s+(-?\d+[,.]\d{2})\s*$/i', $line, $matches)) {
+            $rawName = trim($matches[1]);
+            $amount = $this->parsePrice($matches[2]);
+
+            return new ParsedBonus(
+                rawName: $rawName,
+                discountAmount: abs($amount)
+            );
+        }
+
+        return null;
     }
 }

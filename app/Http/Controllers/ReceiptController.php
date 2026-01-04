@@ -11,6 +11,9 @@ class ReceiptController extends Controller
     {
         $receipt->load('lineItems.product');
 
-        return view('receipts.show', compact('receipt'));
+        $unmatchedBonusCount = $receipt->pendingUnmatchedBonuses()->count();
+        $totalDiscount = $receipt->total_discount;
+
+        return view('receipts.show', compact('receipt', 'unmatchedBonusCount', 'totalDiscount'));
     }
 }

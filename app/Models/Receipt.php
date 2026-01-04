@@ -29,4 +29,24 @@ class Receipt extends Model
     {
         return $this->hasMany(ImportLog::class);
     }
+
+    public function unmatchedBonuses(): HasMany
+    {
+        return $this->hasMany(UnmatchedBonus::class);
+    }
+
+    public function pendingUnmatchedBonuses(): HasMany
+    {
+        return $this->hasMany(UnmatchedBonus::class)->where('status', 'pending');
+    }
+
+    /**
+     * Get the total discount amount for all line items on this receipt.
+     *
+     * @return float Total discount in euros
+     */
+    public function getTotalDiscountAttribute(): float
+    {
+        return (float) $this->lineItems->sum('discount_amount');
+    }
 }

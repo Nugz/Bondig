@@ -47,6 +47,7 @@ development_status:
   1-3-receipt-list-detail-views: backlog
   1-4-batch-receipt-upload: backlog
   1-5-duplicate-receipt-detection: backlog
+  1-6-bonus-discount-parsing: done
   epic-1-retrospective: optional
 
   # Epic 2: AI Categorization & Category Management

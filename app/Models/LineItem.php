@@ -14,6 +14,7 @@ class LineItem extends Model
         'unit_price',
         'total_price',
         'is_bonus',
+        'discount_amount',
         'raw_text',
     ];
 
@@ -22,6 +23,7 @@ class LineItem extends Model
         'unit_price' => 'decimal:2',
         'total_price' => 'decimal:2',
         'is_bonus' => 'boolean',
+        'discount_amount' => 'decimal:2',
     ];
 
     public function receipt(): BelongsTo
@@ -32,5 +34,10 @@ class LineItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function getEffectivePriceAttribute(): float
+    {
+        return $this->total_price - ($this->discount_amount ?? 0);
     }
 }

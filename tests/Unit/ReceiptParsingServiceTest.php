@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\DTOs\ParsedBonus;
 use App\DTOs\ParseResult;
 use App\Services\ReceiptParsingService;
 use Illuminate\Http\UploadedFile;
@@ -171,5 +172,166 @@ class ReceiptParsingServiceTest extends TestCase
 
         $this->assertIsArray($lines);
         $this->assertEmpty($lines);
+    }
+
+    public function test_extract_bonus_section_finds_bonus_lines_after_subtotal(): void
+    {
+        $service = new class extends ReceiptParsingService {
+            public function testExtractBonusSection(string $text): array
+            {
+                return $this->extractBonusSection($text);
+            }
+        };
+
+        $text = "1        PAPRIKA              0,89     3,56 B" . PHP_EOL .
+                "Subtotaal                               10,00" . PHP_EOL .
+                "BONUS                  AHPAPRIKAROO                                           -0,58" . PHP_EOL .
+                "TOTAAL                                   9,42";
+
+        $bonuses = $service->testExtractBonusSection($text);
+
+        $this->assertCount(1, $bonuses);
+        $this->assertInstanceOf(ParsedBonus::class, $bonuses[0]);
+        $this->assertEquals('AHPAPRIKAROO', $bonuses[0]->rawName);
+        $this->assertEquals(0.58, $bonuses[0]->discountAmount);
+    }
+
+    public function test_extract_bonus_section_handles_multiple_bonuses(): void
+    {
+        $service = new class extends ReceiptParsingService {
+            public function testExtractBonusSection(string $text): array
+            {
+                return $this->extractBonusSection($text);
+            }
+        };
+
+        $text = "Products..." . PHP_EOL .
+                "Subtotaal                               50,00" . PHP_EOL .
+                "BONUS                  AHPAPRIKAROO                                           -0,58" . PHP_EOL .
+                "BONUS                  AHKOMKOM500G                                           -1,20" . PHP_EOL .
+                "BONUS                  BEEMSTER                                               -2,50" . PHP_EOL .
+                "TOTAAL                                  45,72";
+
+        $bonuses = $service->testExtractBonusSection($text);
+
+        $this->assertCount(3, $bonuses);
+        $this->assertEquals('AHPAPRIKAROO', $bonuses[0]->rawName);
+        $this->assertEquals(0.58, $bonuses[0]->discountAmount);
+        $this->assertEquals('AHKOMKOM500G', $bonuses[1]->rawName);
+        $this->assertEquals(1.20, $bonuses[1]->discountAmount);
+        $this->assertEquals('BEEMSTER', $bonuses[2]->rawName);
+        $this->assertEquals(2.50, $bonuses[2]->discountAmount);
+    }
+
+    public function test_extract_bonus_section_returns_empty_when_no_subtotal(): void
+    {
+        $service = new class extends ReceiptParsingService {
+            public function testExtractBonusSection(string $text): array
+            {
+                return $this->extractBonusSection($text);
+            }
+        };
+
+        $text = "1        PAPRIKA              0,89     3,56 B" . PHP_EOL .
+                "TOTAAL                                   3,56";
+
+        $bonuses = $service->testExtractBonusSection($text);
+
+        $this->assertEmpty($bonuses);
+    }
+
+    public function test_parse_bonus_line_extracts_name_and_amount(): void
+    {
+        $service = new class extends ReceiptParsingService {
+            public function testParseBonusLine(string $line): ?ParsedBonus
+            {
+                return $this->parseBonusLine($line);
+            }
+        };
+
+        $line = "BONUS                  AHPAPRIKAROO                                           -0,58";
+        $bonus = $service->testParseBonusLine($line);
+
+        $this->assertNotNull($bonus);
+        $this->assertEquals('AHPAPRIKAROO', $bonus->rawName);
+        $this->assertEquals(0.58, $bonus->discountAmount);
+    }
+
+    public function test_parse_bonus_line_handles_positive_amount(): void
+    {
+        $service = new class extends ReceiptParsingService {
+            public function testParseBonusLine(string $line): ?ParsedBonus
+            {
+                return $this->parseBonusLine($line);
+            }
+        };
+
+        // Some receipts might not have the minus sign
+        $line = "BONUS                  AHPAPRIKAROO                                           0,58";
+        $bonus = $service->testParseBonusLine($line);
+
+        $this->assertNotNull($bonus);
+        $this->assertEquals(0.58, $bonus->discountAmount);
+    }
+
+    public function test_parse_bonus_line_returns_null_for_non_bonus_line(): void
+    {
+        $service = new class extends ReceiptParsingService {
+            public function testParseBonusLine(string $line): ?ParsedBonus
+            {
+                return $this->parseBonusLine($line);
+            }
+        };
+
+        $this->assertNull($service->testParseBonusLine("1        PAPRIKA              0,89     3,56 B"));
+        $this->assertNull($service->testParseBonusLine("TOTAAL                                  45,72"));
+        $this->assertNull($service->testParseBonusLine("Some random text"));
+    }
+
+    public function test_parse_bonus_line_handles_percentage_discount(): void
+    {
+        $service = new class extends ReceiptParsingService {
+            public function testParseBonusLine(string $line): ?ParsedBonus
+            {
+                return $this->parseBonusLine($line);
+            }
+        };
+
+        // Percentage discounts like "35% K  BEEMSTER  -3,59"
+        $line = "35% K                  BEEMSTER                                               -3,59";
+        $bonus = $service->testParseBonusLine($line);
+
+        $this->assertNotNull($bonus);
+        $this->assertEquals('BEEMSTER', $bonus->rawName);
+        $this->assertEquals(3.59, $bonus->discountAmount);
+    }
+
+    public function test_extract_bonus_section_handles_subtotal_with_item_count(): void
+    {
+        $service = new class extends ReceiptParsingService {
+            public function testExtractBonusSection(string $text): array
+            {
+                return $this->extractBonusSection($text);
+            }
+        };
+
+        // Real AH format: "46  SUBTOTAAL  145,99" with item count prefix
+        $text = "1        PAPRIKA              0,89     3,56 B" . PHP_EOL .
+                "46                     SUBTOTAAL                                            145,99" . PHP_EOL .
+                "BONUS                  AHPAPRIKAROO                                           -0,58" . PHP_EOL .
+                "BONUS                  LAYS,CHEETOS                                           -1,31" . PHP_EOL .
+                "35% K                  BEEMSTER                                               -3,59" . PHP_EOL .
+                "UW VOORDEEL                                                                 25,18" . PHP_EOL .
+                "TOTAAL                                                                    144,81";
+
+        $bonuses = $service->testExtractBonusSection($text);
+
+        $this->assertCount(3, $bonuses);
+        $this->assertEquals('AHPAPRIKAROO', $bonuses[0]->rawName);
+        $this->assertEquals(0.58, $bonuses[0]->discountAmount);
+        $this->assertEquals('LAYS,CHEETOS', $bonuses[1]->rawName);
+        $this->assertEquals(1.31, $bonuses[1]->discountAmount);
+        $this->assertEquals('BEEMSTER', $bonuses[2]->rawName);
+        $this->assertEquals(3.59, $bonuses[2]->discountAmount);
     }
 }

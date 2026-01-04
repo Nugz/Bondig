@@ -13,5 +13,6 @@ class ParseResult
         public ?Carbon $purchasedAt,
         public ?string $rawText,
         public array $errors = [],
+        public array $bonuses = [],
     ) {}
 }

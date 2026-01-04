@@ -14,10 +14,23 @@
             </a>
         </div>
 
+        <!-- Unmatched Bonuses Alert -->
+        @if($unmatchedBonusCount > 0)
+            <div class="alert alert-warning mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{{ $unmatchedBonusCount }} unmatched bonus{{ $unmatchedBonusCount > 1 ? 'es' : '' }} need your attention</span>
+                <a href="{{ route('receipts.match-bonuses', $receipt) }}" class="btn btn-sm btn-warning">
+                    Match Now
+                </a>
+            </div>
+        @endif
+
         <!-- Receipt Summary Card -->
         <div class="card bg-base-100 shadow-md mb-6">
             <div class="card-body">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <p class="text-sm text-base-content/60">Date & Time</p>
                         <p class="text-lg font-semibold">{{ $receipt->purchased_at->format('d M Y') }}</p>
@@ -31,6 +44,12 @@
                         <p class="text-sm text-base-content/60">Total Amount</p>
                         <p class="text-2xl font-bold text-primary">&euro;{{ number_format($receipt->total_amount, 2, ',', '.') }}</p>
                     </div>
+                    @if($totalDiscount > 0)
+                        <div>
+                            <p class="text-sm text-base-content/60">Total Savings</p>
+                            <p class="text-2xl font-bold text-success">-&euro;{{ number_format($totalDiscount, 2, ',', '.') }}</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -48,6 +67,8 @@
                                 <th class="text-center">Qty</th>
                                 <th class="text-right">Unit Price</th>
                                 <th class="text-right">Total</th>
+                                <th class="text-right">Discount</th>
+                                <th class="text-right">Final</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -63,13 +84,35 @@
                                     </td>
                                     <td class="text-center">{{ $item->quantity }}</td>
                                     <td class="text-right">&euro;{{ number_format($item->unit_price, 2, ',', '.') }}</td>
-                                    <td class="text-right font-medium">&euro;{{ number_format($item->total_price, 2, ',', '.') }}</td>
+                                    <td class="text-right">&euro;{{ number_format($item->total_price, 2, ',', '.') }}</td>
+                                    <td class="text-right">
+                                        @if($item->discount_amount)
+                                            <span class="text-success font-medium">-&euro;{{ number_format($item->discount_amount, 2, ',', '.') }}</span>
+                                        @else
+                                            <span class="text-base-content/40">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-right font-medium">
+                                        @if($item->discount_amount)
+                                            <span class="text-primary">&euro;{{ number_format($item->effective_price, 2, ',', '.') }}</span>
+                                        @else
+                                            &euro;{{ number_format($item->total_price, 2, ',', '.') }}
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot>
                             <tr class="font-bold">
-                                <td colspan="3" class="text-right">Total</td>
+                                <td colspan="3" class="text-right">Subtotal</td>
+                                <td class="text-right">&euro;{{ number_format($receipt->lineItems->sum('total_price'), 2, ',', '.') }}</td>
+                                <td class="text-right text-success">
+                                    @if($totalDiscount > 0)
+                                        -&euro;{{ number_format($totalDiscount, 2, ',', '.') }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td class="text-right text-primary">&euro;{{ number_format($receipt->total_amount, 2, ',', '.') }}</td>
                             </tr>
                         </tfoot>
