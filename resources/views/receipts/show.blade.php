@@ -6,12 +6,20 @@
                 <h1 class="text-3xl font-bold text-base-content">Receipt Details</h1>
                 <p class="text-base-content/60 mt-1">{{ $receipt->store }}</p>
             </div>
-            <a href="{{ route('upload') }}" class="btn btn-outline btn-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Upload Another
-            </a>
+            <div class="flex gap-2">
+                <a href="{{ route('receipts.index') }}" class="btn btn-ghost">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to Receipts
+                </a>
+                <a href="{{ route('upload') }}" class="btn btn-outline btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Upload Another
+                </a>
+            </div>
         </div>
 
         <!-- Unmatched Bonuses Alert -->
@@ -38,7 +46,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-base-content/60">Items</p>
-                        <p class="text-lg font-semibold">{{ $receipt->lineItems->count() }} products</p>
+                        <p class="text-lg font-semibold">{{ $receipt->line_items_count }} {{ $receipt->line_items_count === 1 ? 'product' : 'products' }}</p>
                     </div>
                     <div>
                         <p class="text-sm text-base-content/60">Total Amount</p>
@@ -72,14 +80,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($receipt->lineItems as $item)
-                                <tr>
+                            @foreach($receipt->lineItems as $index => $item)
+                                <tr x-data="{ showRawText: false }">
                                     <td>
                                         <div class="flex items-center gap-2">
                                             <span>{{ $item->product->name }}</span>
                                             @if($item->is_bonus)
                                                 <span class="badge badge-success badge-sm">BONUS</span>
                                             @endif
+                                            @if($item->raw_text)
+                                                <button
+                                                    @click="showRawText = !showRawText"
+                                                    class="btn btn-ghost btn-xs text-base-content/50 hover:text-base-content"
+                                                    title="View original text"
+                                                    aria-label="Toggle original text view"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        </div>
+                                        <div x-show="showRawText" x-collapse class="mt-2">
+                                            <code class="text-xs bg-base-200 px-2 py-1 rounded block max-h-24 overflow-y-auto">{{ $item->raw_text }}</code>
                                         </div>
                                     </td>
                                     <td class="text-center">{{ $item->quantity }}</td>
@@ -104,7 +127,8 @@
                         </tbody>
                         <tfoot>
                             <tr class="font-bold">
-                                <td colspan="3" class="text-right">Subtotal</td>
+                                <td colspan="2"></td>
+                                <td class="text-right">Subtotal</td>
                                 <td class="text-right">&euro;{{ number_format($receipt->lineItems->sum('total_price'), 2, ',', '.') }}</td>
                                 <td class="text-right text-success">
                                     @if($totalDiscount > 0)

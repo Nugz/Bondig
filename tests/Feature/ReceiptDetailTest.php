@@ -127,4 +127,105 @@ class ReceiptDetailTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_receipt_detail_shows_back_to_receipts_link(): void
+    {
+        $receipt = Receipt::create([
+            'store' => 'Albert Heijn',
+            'purchased_at' => now(),
+            'total_amount' => 25.50,
+        ]);
+
+        $response = $this->get("/receipts/{$receipt->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('Back to Receipts');
+        $response->assertSee(route('receipts.index'));
+    }
+
+    public function test_receipt_detail_shows_line_item_raw_text(): void
+    {
+        $receipt = Receipt::create([
+            'store' => 'Albert Heijn',
+            'purchased_at' => now(),
+            'total_amount' => 10.00,
+        ]);
+
+        $product = Product::create([
+            'name' => 'Test Product',
+            'normalized_name' => 'test product',
+        ]);
+
+        LineItem::create([
+            'receipt_id' => $receipt->id,
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'unit_price' => 5.00,
+            'total_price' => 5.00,
+            'raw_text' => 'TESTPRODUCT  1 x 5.00  5.00',
+        ]);
+
+        $response = $this->get("/receipts/{$receipt->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('TESTPRODUCT  1 x 5.00  5.00');
+    }
+
+    public function test_receipt_detail_shows_discount_amount(): void
+    {
+        $receipt = Receipt::create([
+            'store' => 'Albert Heijn',
+            'purchased_at' => now(),
+            'total_amount' => 8.00,
+        ]);
+
+        $product = Product::create([
+            'name' => 'Discount Product',
+            'normalized_name' => 'discount product',
+        ]);
+
+        LineItem::create([
+            'receipt_id' => $receipt->id,
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'unit_price' => 10.00,
+            'total_price' => 10.00,
+            'discount_amount' => 2.00,
+            'is_bonus' => true,
+        ]);
+
+        $response = $this->get("/receipts/{$receipt->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('2,00'); // Discount amount
+        $response->assertSee('8,00'); // Effective price
+    }
+
+    public function test_receipt_detail_shows_singular_product_for_one_item(): void
+    {
+        $receipt = Receipt::create([
+            'store' => 'Albert Heijn',
+            'purchased_at' => now(),
+            'total_amount' => 5.00,
+        ]);
+
+        $product = Product::create([
+            'name' => 'Single Item',
+            'normalized_name' => 'single item',
+        ]);
+
+        LineItem::create([
+            'receipt_id' => $receipt->id,
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'unit_price' => 5.00,
+            'total_price' => 5.00,
+        ]);
+
+        $response = $this->get("/receipts/{$receipt->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('1 product');
+        $response->assertDontSee('1 products');
+    }
 }

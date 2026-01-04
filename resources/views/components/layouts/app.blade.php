@@ -31,6 +31,11 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ route('receipts.index') }}" class="{{ request()->routeIs('receipts.*') ? 'active' : '' }}">
+                            Receipts
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('products') }}" class="{{ request()->routeIs('products') ? 'active' : '' }}">
                             Products
                         </a>
@@ -51,6 +56,11 @@
                 <li>
                     <a href="{{ route('upload') }}" class="{{ request()->routeIs('upload') ? 'bg-primary/10 text-primary' : '' }}">
                         Upload
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('receipts.index') }}" class="{{ request()->routeIs('receipts.*') ? 'bg-primary/10 text-primary' : '' }}">
+                        Receipts
                     </a>
                 </li>
                 <li>
