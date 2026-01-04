@@ -8,12 +8,20 @@ use App\Models\LineItem;
 use App\Models\Receipt;
 use App\Models\UnmatchedBonus;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ReceiptUploadService
 {
+    /**
+     * The store name for receipt processing.
+     * Currently only Albert Heijn is supported, but this constant
+     * makes it easy to extend for other stores in the future.
+     */
+    protected const DEFAULT_STORE = 'Albert Heijn';
+
     public function __construct(
         protected ReceiptParsingService $parsingService,
         protected ProductMatchingService $productService,
@@ -92,16 +100,22 @@ class ReceiptUploadService
 
     /**
      * Check if the receipt is a duplicate.
+     *
+     * @param ParseResult $result The parsed receipt result
+     * @param string|null $store The store name to check (defaults to DEFAULT_STORE)
      */
-    protected function isDuplicate(ParseResult $result): bool
+    protected function isDuplicate(ParseResult $result, ?string $store = null): bool
     {
         // Only check for duplicates if we have a valid date to compare
         if ($result->purchasedAt === null) {
             return false;
         }
 
-        return Receipt::where('store', 'Albert Heijn')
-            ->whereDate('purchased_at', $result->purchasedAt->format('Y-m-d'))
+        $store = $store ?? self::DEFAULT_STORE;
+
+        // Use whereDate to properly compare dates in SQLite (which stores dates as datetime strings)
+        return Receipt::where('store', $store)
+            ->whereDate('purchased_date', $result->purchasedAt->format('Y-m-d'))
             ->where('total_amount', $result->total ?? 0)
             ->exists();
     }
@@ -137,7 +151,7 @@ class ReceiptUploadService
         try {
             $transactionResult = DB::transaction(function () use ($pdfPath, $filename, $result) {
                 $receipt = Receipt::create([
-                    'store' => 'Albert Heijn',
+                    'store' => self::DEFAULT_STORE,
                     'purchased_at' => $result->purchasedAt ?? now(),
                     'total_amount' => $result->total ?? 0,
                     'pdf_path' => $pdfPath,
@@ -222,6 +236,15 @@ class ReceiptUploadService
             }
 
             return $result;
+        } catch (UniqueConstraintViolationException $e) {
+            // Database-level duplicate detection (constraint violation)
+            Storage::disk('local')->delete($pdfPath);
+
+            Log::info('Duplicate receipt detected by database constraint', [
+                'file' => $filename,
+            ]);
+
+            return $this->handleDuplicate($filename);
         } catch (\Exception $e) {
             // Clean up stored file since transaction failed
             Storage::disk('local')->delete($pdfPath);

@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Receipt extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'store',
         'purchased_at',
+        'purchased_date',
         'total_amount',
         'pdf_path',
         'raw_text',
@@ -17,8 +20,26 @@ class Receipt extends Model
 
     protected $casts = [
         'purchased_at' => 'datetime',
+        'purchased_date' => 'date',
         'total_amount' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Receipt $receipt) {
+            // Automatically set purchased_date from purchased_at for duplicate constraint
+            if ($receipt->purchased_at && !$receipt->purchased_date) {
+                $receipt->purchased_date = $receipt->purchased_at->toDateString();
+            }
+        });
+
+        static::updating(function (Receipt $receipt) {
+            // Keep purchased_date in sync with purchased_at
+            if ($receipt->isDirty('purchased_at') && $receipt->purchased_at) {
+                $receipt->purchased_date = $receipt->purchased_at->toDateString();
+            }
+        });
+    }
 
     public function lineItems(): HasMany
     {
